@@ -18,7 +18,12 @@ impl<'a> System<'a> for MonsterAI {
 
         for (mut viewshed,_monster,name,mut pos) in (&mut viewshed, &monster, &name, &mut position).join() {
             if viewshed.visible_tiles.contains(&*player_pos) { // if the player is visible to a monster
-                console::log(&format!("{} shouts insults", name.name)); // yell at the player
+                let distance = rltk::DistanceAlg::Pythagoras.distance2d(Point::new(pos.x, pos.y), *player_pos);
+                if distance < 1.5 { // don't stack on top of the player
+                    // Attack goes here
+                    console::log(&format!("{} shouts insults", name.name));
+                    return;
+                }
                 let path = rltk::a_star_search( // find a path and distance to the player
                     map.xy_idx(pos.x, pos.y) as i32,
                     map.xy_idx(player_pos.x, player_pos.y) as i32,
