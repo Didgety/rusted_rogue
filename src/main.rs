@@ -122,7 +122,7 @@ fn main() -> rltk::BError {
             .build();
     }
 
-    gs.ecs
+    let player_entity = gs.ecs
         .create_entity()
         .with(Position { x: player_x, y: player_y })
         .with(Renderable {
@@ -136,8 +136,10 @@ fn main() -> rltk::BError {
         .with(CombatStats{ max_hp: 30, hp: 30, defense: 2, power: 5 })
         .build();
 
-        gs.ecs.insert(map);
-        gs.ecs.insert(Point::new(player_x, player_y));
+        
+    gs.ecs.insert(player_entity);
+    gs.ecs.insert(map);
+    gs.ecs.insert(Point::new(player_x, player_y));
 
     rltk::main_loop(context, gs)
 }
