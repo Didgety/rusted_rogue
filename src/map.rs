@@ -100,6 +100,12 @@ impl Map {
 
         map
     }
+
+    fn is_exit_valid(&self, x:i32, y:i32) -> bool {
+        if x < 1 || x > self.width-1 || y < 1 || y > self.height-1 { return false; }
+        let idx = self.xy_idx(x, y);
+        self.tiles[idx as usize] != TileType::Wall
+    }
 }
 
 // required by RLTK for a viewshed
