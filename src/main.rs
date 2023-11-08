@@ -1,4 +1,4 @@
-use rltk::{GameState, Rltk, RGB};
+use rltk::{GameState, Point, Rltk, RGB};
 use specs::prelude::*;
 
 mod components;
@@ -97,8 +97,6 @@ fn main() -> rltk::BError {
                 .with(Monster{})
                 .build();
     }
-    
-    gs.ecs.insert(map);
 
     gs.ecs
         .create_entity()
@@ -111,6 +109,9 @@ fn main() -> rltk::BError {
         .with(Player{})
         .with(Viewshed{ visible_tiles : Vec::new(), range : 8, dirty: true })
         .build();
+
+        gs.ecs.insert(map);
+        gs.ecs.insert(Point::new(player_x, player_y));
 
     rltk::main_loop(context, gs)
 }

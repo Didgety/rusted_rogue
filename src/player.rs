@@ -1,4 +1,4 @@
-use rltk::{VirtualKeyCode, Rltk};
+use rltk::{ Point, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use super::{Position, Player, RunState, TileType, State, Map, Viewshed};
@@ -16,6 +16,9 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             pos.y = min(49, max(0, pos.y + delta_y));
 
             viewshed.dirty = true; // forces game to render new tiles
+            let mut ppos = ecs.write_resource::<Point>();
+            ppos.x = pos.x;
+            ppos.y = pos.y;
         }
     }
 }
