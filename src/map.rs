@@ -16,7 +16,8 @@ pub struct Map {
     pub height : i32,
     pub revealed_tiles : Vec<bool>,
     pub visible_tiles : Vec<bool>,
-    pub blocked : Vec<bool>
+    pub blocked : Vec<bool>,
+    pub tile_content : Vec<Vec<Entity>>
 }
 
 impl Map {
@@ -62,7 +63,8 @@ impl Map {
             height: 50,
             revealed_tiles : vec![false; 80*50],
             visible_tiles : vec![false; 80*50],
-            blocked : vec![false; 80*50]
+            blocked : vec![false; 80*50],
+            tile_content : vec![Vec::new(); 80*50]
         };
 
         const MAX_ROOMS : i32 = 30;
@@ -114,6 +116,12 @@ impl Map {
             self.blocked[i] = *tile == TileType::Wall;
         }
     }
+
+    pub fn clear_content_index(&mut self) {
+        for content in self.tile_content.iter_mut() {
+            content.clear();
+        }
+    }
 }
 
 // required by RLTK for a viewshed
@@ -133,7 +141,7 @@ impl BaseMap for Map {
         let x = idx as i32 % self.width;
         let y = idx as i32 / self.width;
         let w = self.width as usize;
-    
+
         // Cardinal directions
         if self.is_exit_valid(x-1, y) { exits.push((idx-1, 1.0)) };
         if self.is_exit_valid(x+1, y) { exits.push((idx+1, 1.0)) };

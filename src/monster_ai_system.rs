@@ -30,8 +30,12 @@ impl<'a> System<'a> for MonsterAI {
                     &mut *map
                 );
                 if path.success && path.steps.len()>1 { // move one step towards the player if at least 2 steps away
+                    let mut idx = map.xy_idx(pos.x, pos.y);
+                    map.blocked[idx] = false;
                     pos.x = path.steps[1] as i32 % map.width;
                     pos.y = path.steps[1] as i32 / map.width;
+                    idx = map.xy_idx(pos.x, pos.y);
+                    map.blocked[idx] = true;
                     viewshed.dirty = true;
                 }
             }
