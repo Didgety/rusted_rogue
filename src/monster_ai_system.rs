@@ -16,7 +16,7 @@ impl<'a> System<'a> for MonsterAI {
     fn run(&mut self, data : Self::SystemData) {
         let (mut map, player_pos, mut viewshed, monster, name, mut position) = data;
 
-        for (mut viewshed,_monster,name,mut pos) in (&mut viewshed, &monster, &name, &mut position).join() {
+        for (mut viewshed, _monster, name, mut pos) in (&mut viewshed, &monster, &name, &mut position).join() {
             if viewshed.visible_tiles.contains(&*player_pos) { // if the player is visible to a monster
                 let distance = rltk::DistanceAlg::Pythagoras.distance2d(Point::new(pos.x, pos.y), *player_pos);
                 if distance < 1.5 { // don't stack on top of the player
