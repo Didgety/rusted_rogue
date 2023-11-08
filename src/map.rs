@@ -63,8 +63,8 @@ impl Map {
         let mut map = Map{
             tiles : vec![TileType::Wall; MAPCOUNT],
             rooms : Vec::new(),
-            width : 80,
-            height: 50,
+            width : MAPWIDTH as i32,
+            height: MAPHEIGHT as i32,
             revealed_tiles : vec![false; MAPCOUNT],
             visible_tiles : vec![false; MAPCOUNT],
             blocked : vec![false; MAPCOUNT],
