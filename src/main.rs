@@ -96,9 +96,11 @@ impl GameState for State {
 
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
-    let context = RltkBuilder::simple80x50()
+    let mut context = RltkBuilder::simple80x50()
         .with_title("Rusty Rogue")
         .build()?;
+
+    context.with_post_scanlines(true); // PostFX similar to Caves of Qud
 
     let mut gs = State {
         ecs: World::new(),
