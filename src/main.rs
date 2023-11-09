@@ -1,4 +1,4 @@
-use rltk::{GameState, Point, Rltk, RGB};
+use rltk::{ GameState, Point, Rltk };
 use specs::prelude::*;
 
 mod components;
@@ -22,6 +22,8 @@ pub use damage_system::DamageSystem;
 mod gui;
 mod gamelog;
 mod spawner;
+mod inventory_system;
+pub use inventory_system::ItemCollectionSystem;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn }
@@ -42,6 +44,9 @@ impl State {
         melee.run_now(&self.ecs);
         let mut damage = DamageSystem{};
         damage.run_now(&self.ecs);
+        let mut pickup = inventory_system::ItemCollectionSystem{};
+        pickup.run_now(&self.ecs);
+        
         self.ecs.maintain();
     }
 }
@@ -118,6 +123,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SufferDamage>();
     gs.ecs.register::<Item>();
     gs.ecs.register::<Potion>();
+    gs.ecs.register::<InBackpack>();
+    gs.ecs.register::<WantsToPickupItem>();
 
     gs.ecs.insert(RunState::PreRun);
     gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Rusty Rogue".to_string()] });
