@@ -1,5 +1,8 @@
+extern crate serde;
+
 use rltk::{ GameState, Point, Rltk };
 use specs::prelude::*;
+use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 mod components;
 pub use components::*;
@@ -24,6 +27,7 @@ mod gamelog;
 mod spawner;
 mod inventory_system;
 pub use inventory_system::{ ItemCollectionSystem, ItemDropSystem, ItemUseSystem };
+mod saveload_system;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, 
@@ -33,7 +37,8 @@ pub enum RunState { AwaitingInput,
                     ShowInventory, 
                     ShowDropItem,
                     ShowTargeting { range : i32, item : Entity},
-                    MainMenu { menu_selection : gui::MainMenuSelection}
+                    MainMenu { menu_selection : gui::MainMenuSelection},
+                    SaveGame
                   }
 
 pub struct State {
@@ -157,18 +162,26 @@ impl GameState for State {
                     }
                 }
             }
-            RunState::MainMenu{..} => {
+            RunState::MainMenu{ .. } => {
                 let result = gui::main_menu(self, ctx);
                 match result {
                     gui::MainMenuResult::NoSelection{ selected } => newrunstate = RunState::MainMenu{ menu_selection: selected },
                     gui::MainMenuResult::Selected{ selected } => {
                         match selected {
                             gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
-                            gui::MainMenuSelection::LoadGame => newrunstate = RunState::PreRun,
+                            gui::MainMenuSelection::LoadGame => {
+                                saveload_system::load_game(&mut self.ecs);
+                                newrunstate = RunState::AwaitingInput;
+                                saveload_system::delete_save(); // save is deleted after loading, disable if you don't want permadeath!
+                            }
                             gui::MainMenuSelection::Quit => { ::std::process::exit(0); }
                         }
                     }
                 }
+            }        
+            RunState::SaveGame => {
+                saveload_system::save_game(&mut self.ecs);
+                newrunstate = RunState::MainMenu{ menu_selection : gui::MainMenuSelection::LoadGame };
             }
         }
 
@@ -213,7 +226,10 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<WantsToDropItem>();
     gs.ecs.register::<Confusion>();
+    gs.ecs.register::<SimpleMarker<SerializeMe>>();
+    gs.ecs.register::<SerializationHelper>();
     
+    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
 
     let map : Map = Map::new_map_rooms_and_corridors();
