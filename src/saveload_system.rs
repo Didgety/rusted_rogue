@@ -39,6 +39,8 @@ pub fn does_save_exist() -> bool {
     Path::new("./savegame.json").exists()
 }
 
+
+#[cfg(not(target_arch = "wasm32"))] // wasm doesn't support local saves
 pub fn save_game(ecs : &mut World) {
     // Create helper
     let mapcopy = ecs.get_mut::<super::map::Map>().unwrap().clone();
@@ -63,6 +65,11 @@ pub fn save_game(ecs : &mut World) {
 
     // Clean up
     ecs.delete_entity(savehelper).expect("Crash on cleanup");
+}
+
+// stub for wasm
+#[cfg(target_arch = "wasm32")]
+pub fn save_game(_ecs : &mut World) {
 }
 
 pub fn load_game(ecs: &mut World) {
