@@ -116,19 +116,21 @@ fn main() -> rltk::BError {
     gs.ecs.register::<CombatStats>();
     gs.ecs.register::<WantsToMelee>();
     gs.ecs.register::<SufferDamage>();
+    gs.ecs.register::<Item>();
+    gs.ecs.register::<Potion>();
+
     gs.ecs.insert(RunState::PreRun);
     gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Rusty Rogue".to_string()] });
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
 
     let map : Map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();
-    // spawn player
+    // create player
     let player_entity = spawner::player(&mut gs.ecs, player_x, player_y);
     // spawn monsters
     for room in map.rooms.iter().skip(1) {
         spawner::spawn_room(&mut gs.ecs, room);
     }
-
         
     gs.ecs.insert(player_entity);
     gs.ecs.insert(map);
