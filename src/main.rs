@@ -26,7 +26,7 @@ mod inventory_system;
 pub use inventory_system::ItemCollectionSystem;
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn }
+pub enum RunState { AwaitingInput, PreRun, PlayerTurn, MonsterTurn, ShowInventory }
 
 pub struct State {
     pub ecs: World,
@@ -46,7 +46,7 @@ impl State {
         damage.run_now(&self.ecs);
         let mut pickup = inventory_system::ItemCollectionSystem{};
         pickup.run_now(&self.ecs);
-        
+
         self.ecs.maintain();
     }
 }
@@ -76,6 +76,11 @@ impl GameState for State {
                 self.run_systems();
                 newrunstate = RunState::AwaitingInput;
             }
+            RunState::ShowInventory => {
+                if gui::show_inventory(self, ctx) == gui::ItemMenuResult::Cancel {
+                    newrunstate = RunState::AwaitingInput;
+                }
+            }
         }
 
         {
@@ -95,6 +100,7 @@ impl GameState for State {
             let idx = map.xy_idx(pos.x, pos.y);
             if map.visible_tiles[idx] { ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph) } // only render monsters when seen
         }
+        
 
         gui::draw_ui(&self.ecs, ctx);
     }

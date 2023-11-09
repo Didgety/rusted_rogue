@@ -78,6 +78,9 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             // Pickup items
             VirtualKeyCode::G => get_item(&mut gs.ecs),
 
+            // View winventory
+            VirtualKeyCode::I => return RunState::ShowInventory,
+
             _ => { return RunState::AwaitingInput }
         },
     }
