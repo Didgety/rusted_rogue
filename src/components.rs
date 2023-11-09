@@ -84,3 +84,8 @@ pub struct WantsToPickupItem {
 pub struct Potion {
     pub heal_amount : i32
 }
+
+#[derive(Component, Debug)]
+pub struct WantsToDrinkPotion {
+    pub potion : Entity
+}
