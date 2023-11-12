@@ -8,7 +8,6 @@ use super::{ AreaOfEffect, CombatStats, Confusion, Consumable, map::MAPWIDTH, It
 
 
 const MAX_MONSTERS : i32 = 4;
-const MAX_ITEMS : i32 = 2;
 
 /// Spawns the player and returns his/her entity object.
 pub fn player(ecs : &mut World, player_x : i32, player_y : i32) -> Entity {
@@ -91,6 +90,8 @@ pub fn spawn_room(ecs: &mut World, room : &Rect, map_depth : i32) {
             "Fireball Scroll" => fireball_scroll(ecs, x, y),
             "Confusion Scroll" => confusion_scroll(ecs, x, y),
             "Magic Missile Scroll" => magic_missile_scroll(ecs, x, y),
+            "Dagger" => dagger(ecs, x, y),
+            "Shield" => shield(ecs, x, y),
             _ => {}
         }
     }
@@ -104,6 +105,8 @@ fn room_table(map_depth : i32) -> RandomTable {
         .add("Fireball Scroll", 2 + map_depth)
         .add("Confusion Scroll", 2 + map_depth)
         .add("Magic Missile Scroll", 4)
+        .add("Dagger", 3)
+        .add("Shield", 3)
 }
 
 fn health_potion(ecs: &mut World, x: i32, y: i32) {
@@ -174,6 +177,36 @@ fn confusion_scroll(ecs: &mut World, x: i32, y: i32) {
         .with(Consumable{})
         .with(Ranged{ range: 6 })
         .with(Confusion{ turns: 4 })
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn dagger(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable{
+            glyph: rltk::to_cp437('/'),
+            fg: RGB::named(rltk::CYAN),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2
+        })
+        .with(Name{ name : "Dagger".to_string() })
+        .with(Item{})
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
+fn shield(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position{ x, y })
+        .with(Renderable{
+            glyph: rltk::to_cp437('('),
+            fg: RGB::named(rltk::CYAN),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2
+        })
+        .with(Name{ name : "Shield".to_string() })
+        .with(Item{})
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 }
