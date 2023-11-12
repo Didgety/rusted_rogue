@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use specs::error::NoError;
+use specs::error::NoError; // where needed in other code, can be replaced with: use std::convert::Infallible;
 use specs::prelude::*;
 use specs::saveload::{Marker, ConvertSaveload};
 use specs_derive::*;

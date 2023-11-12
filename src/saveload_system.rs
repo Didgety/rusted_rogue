@@ -1,15 +1,19 @@
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator, SerializeComponents, DeserializeComponents, MarkedBuilder};
-use specs::error::NoError;
+// use specs::error::NoError;
 use super::components::*;
+use std::convert::Infallible; // replaces specs::error::NoError
+use std::fs;
 use std::fs::File;
 use std::path::Path;
-use std::fs;
+
+
+
 
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
         $(
-        SerializeComponents::<NoError, SimpleMarker<SerializeMe>>::serialize(
+        SerializeComponents::<Infallible, SimpleMarker<SerializeMe>>::serialize(
             &( $ecs.read_storage::<$type>(), ),
             &$data.0,
             &$data.1,
@@ -23,7 +27,7 @@ macro_rules! serialize_individually {
 macro_rules! deserialize_individually {
     ($ecs:expr, $de:expr, $data:expr, $( $type:ty),*) => {
         $(
-        DeserializeComponents::<NoError, _>::deserialize(
+        DeserializeComponents::<Infallible, _>::deserialize(
             &mut ( &mut $ecs.write_storage::<$type>(), ),
             &mut $data.0, // entities
             &mut $data.1, // marker
