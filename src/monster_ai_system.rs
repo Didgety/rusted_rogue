@@ -1,7 +1,7 @@
 use specs::prelude::*;
 
-use super::{ Confusion, Viewshed, Monster, Map, Position, WantsToMelee, RunState };
-use rltk::{Point};
+use super::{ Confusion, Viewshed, Monster, Map, particle_system::ParticleBuilder, Position, WantsToMelee, RunState };
+use rltk::{ Point };
 
 pub struct MonsterAI {}
 
@@ -16,11 +16,12 @@ impl<'a> System<'a> for MonsterAI {
                         ReadStorage<'a, Monster>,
                         WriteStorage<'a, Position>,
                         WriteStorage<'a, WantsToMelee>,
-                        WriteStorage<'a, Confusion>);
+                        WriteStorage<'a, Confusion>,
+                        WriteExpect<'a, ParticleBuilder>);
 
     fn run(&mut self, data : Self::SystemData) {
         let (mut map, player_pos, player_entity, runstate, entities, mut viewshed, monster,
-             mut position, mut wants_to_melee, mut confused) = data;
+             mut position, mut wants_to_melee, mut confused, mut particle_builder) = data;
         // monsters can only do things on their turn
         if *runstate != RunState::MonsterTurn { return; }
 
@@ -34,6 +35,9 @@ impl<'a> System<'a> for MonsterAI {
                     confused.remove(entity);
                 }
                 can_act = false;
+                // show ? on turn change indicating mob is still confused
+                particle_builder.request(pos.x, pos.y, rltk::RGB::named(rltk::MAGENTA), 
+                rltk::RGB::named(rltk::BLACK), rltk::to_cp437('?'), 200.0);
             }
 
             if can_act {

@@ -165,10 +165,14 @@ fn skip_turn(ecs: &mut World) -> RunState {
         }
     }
 
+    let mut gamelog = ecs.fetch_mut::<GameLog>();
     if can_heal {
         let mut health_components = ecs.write_storage::<CombatStats>();
         let player_hp = health_components.get_mut(*player_entity).unwrap();
         player_hp.hp = i32::min(player_hp.hp + 1, player_hp.max_hp);
+        gamelog.entries.push("Your wounds begin to heal.".to_string());
+    } else {
+        gamelog.entries.push("Your wounds are not healing.".to_string());
     }
 
     RunState::PlayerTurn

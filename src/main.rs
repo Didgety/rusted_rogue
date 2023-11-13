@@ -30,6 +30,7 @@ pub use inventory_system::{ ItemCollectionSystem, ItemDropSystem, ItemRemoveSyst
 mod saveload_system;
 mod random_table;
 pub use random_table::RandomTable;
+mod particle_system;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, 
@@ -70,6 +71,8 @@ impl State {
         drop_items.run_now(&self.ecs);
         let mut item_remove = ItemRemoveSystem{};
         item_remove.run_now(&self.ecs);
+        let mut particles = particle_system::ParticleSpawnSystem{};
+        particles.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -220,6 +223,7 @@ impl GameState for State {
         }
         
         ctx.cls();
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
 
         match newrunstate {
             RunState::MainMenu {..} => {}
@@ -367,7 +371,7 @@ impl GameState for State {
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let mut context = RltkBuilder::simple80x50()
-        .with_title("Rusty Rogue")
+        .with_title("Rusted Rogue")
         .build()?;
 
     context.with_post_scanlines(true); // PostFX similar to Caves of Qud
@@ -403,9 +407,11 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Equipped>();
     gs.ecs.register::<MeleePowerBonus>();
     gs.ecs.register::<DefenseBonus>();
+    gs.ecs.register::<ParticleLifetime>();
     
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
+    gs.ecs.insert(particle_system::ParticleBuilder::new());
 
     let map : Map = Map::new_map_rooms_and_corridors(1);
     let (player_x, player_y) = map.rooms[0].center();
