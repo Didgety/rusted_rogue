@@ -1,10 +1,10 @@
-use serde::{Serialize, Deserialize};
-use specs::error::NoError; // where needed in other code, can be replaced with: use std::convert::Infallible;
+use serde::{ Serialize, Deserialize };
+use specs::error::NoError; // where needed in other code, can be replaced with: std::convert::Infallible;
 use specs::prelude::*;
 use specs::saveload::{Marker, ConvertSaveload};
 use specs_derive::*;
 
-use rltk::{RGB};
+use rltk::{ RGB };
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
@@ -157,6 +157,15 @@ pub struct DefenseBonus {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct ParticleLifetime {
     pub lifetime_ms : f32
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
+pub enum HungerState { WellFed, Normal, Hungry, Starving }
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct HungerClock {
+    pub state : HungerState,
+    pub duration : i32
 }
 
 // Serialization helper code. We need to implement ConvertSaveload for each type that contains an
