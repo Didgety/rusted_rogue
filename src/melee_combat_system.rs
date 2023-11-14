@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use crate::Position;
 
-use super::{ CombatStats, DefenseBonus, Equipped, gamelog::GameLog, 
+use super::{ CombatStats, DefenseBonus, Equipped, gamelog::GameLog, HungerClock, HungerState, 
              MeleePowerBonus, Name, particle_system::ParticleBuilder, SufferDamage, WantsToMelee };
 
 pub struct MeleeCombatSystem {}
@@ -17,12 +17,13 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         ReadStorage<'a, DefenseBonus>,
                         ReadStorage<'a, Equipped>,
                         WriteExpect<'a, ParticleBuilder>,
-                        ReadStorage<'a, Position>
+                        ReadStorage<'a, Position>,
+                        ReadStorage<'a, HungerClock>
                       );
 
     fn run(&mut self, data : Self::SystemData) {
         let (entities, mut log, mut wants_melee, names, combat_stats, mut inflict_damage,
-             melee_power_bonuses, defense_bonuses, equipped, mut particle_builder, positions) = data;
+             melee_power_bonuses, defense_bonuses, equipped, mut particle_builder, positions, hunger_clock) = data;
 
         for (entity, wants_melee, name, stats) in (&entities, &wants_melee, &names, &combat_stats).join() {
             if stats.hp > 0 {
@@ -32,7 +33,13 @@ impl<'a> System<'a> for MeleeCombatSystem {
                         offensive_bonus += power_bonus.power;
                     }
                 }
-
+                // bonus for being well fed
+                let hc = hunger_clock.get(entity);
+                if let Some(hc) = hc {
+                    if hc.state == HungerState::WellFed {
+                        offensive_bonus += 1;
+                    }
+                }
                 let target_stats = combat_stats.get(wants_melee.target).unwrap();
                 if target_stats.hp > 0 {
                     let target_name = names.get(wants_melee.target).unwrap();

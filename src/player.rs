@@ -1,7 +1,7 @@
 use rltk::{ Point, Rltk, VirtualKeyCode };
 use specs::prelude::*;
 use std::cmp::{max, min};
-use super::{ CombatStats, gamelog::GameLog, Item, Position, Player, RunState, State,
+use super::{ CombatStats, gamelog::GameLog, HungerClock, HungerState, Item, Position, Player, RunState, State,
              TileType, Map, Monster, Viewshed, WantsToMelee, WantsToPickupItem };
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
@@ -146,10 +146,11 @@ pub fn try_next_level(ecs: &mut World) -> bool {
 }
 
 fn skip_turn(ecs: &mut World) -> RunState {
-    let player_entity = ecs.fetch::<Entity>();
     let viewshed_components = ecs.read_storage::<Viewshed>();
     let monsters = ecs.read_storage::<Monster>();
 
+    let player_entity = ecs.fetch::<Entity>();
+    let mut gamelog = ecs.fetch_mut::<GameLog>();
     let worldmap_resource = ecs.fetch::<Map>();
 
     let mut can_heal = true;
@@ -165,7 +166,17 @@ fn skip_turn(ecs: &mut World) -> RunState {
         }
     }
 
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
+    // can't heal if you are starving!
+    let hunger_clocks = ecs.read_storage::<HungerClock>();
+    let hc = hunger_clocks.get(*player_entity);
+    if let Some(hc) = hc {
+        match hc.state {
+            HungerState::Hungry => can_heal = false,
+            HungerState::Starving => can_heal = false,
+            _ => {}
+        }
+    }
+
     if can_heal {
         let mut health_components = ecs.write_storage::<CombatStats>();
         let player_hp = health_components.get_mut(*player_entity).unwrap();
