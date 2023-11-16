@@ -63,7 +63,7 @@ impl<'a> System<'a> for ItemUseSystem {
                       );
 
     fn run(&mut self, data : Self::SystemData) {
-        let (player_entity, mut gamelog, mut map, entities, mut wants_use, names, consumables, healing,
+        let (player_entity, mut gamelog, map, entities, mut wants_use, names, consumables, healing,
              inflict_damage, mut combat_stats, mut suffer_damage, aoe, mut confused, equippable,
              mut equipped, mut backpack, mut particle_builder, positions, provides_food, mut hunger_clocks,
              magic_mapper, mut runstate) = data;
@@ -159,10 +159,8 @@ impl<'a> System<'a> for ItemUseSystem {
                 None => {}
                 Some(_) => {
                     used_item = true;
-                    for r in map.revealed_tiles.iter_mut() {
-                        *r = true;
-                    }
                     gamelog.entries.push("The map is revealed to you!".to_string());
+                    *runstate = RunState::MagicMapReveal{ row : 0};
                 }
             }
 
