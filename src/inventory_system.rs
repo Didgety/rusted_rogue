@@ -2,8 +2,8 @@ use specs::prelude::*;
 use crate::{Consumable, ProvidesFood, HungerClock};
 
 use super::{ AreaOfEffect, CombatStats, Confusion, Equippable, Equipped, HungerState, 
-             gamelog::GameLog, InflictsDamage, InBackpack, Map, Name, Position, 
-             particle_system::ParticleBuilder, ProvidesHealing, SufferDamage, 
+             gamelog::GameLog, InflictsDamage, InBackpack, MagicMapper, Map, Name, Position, 
+             particle_system::ParticleBuilder, ProvidesHealing, RunState, SufferDamage, 
              WantsToPickupItem, WantsToDropItem, WantsToRemoveItem, WantsToUseItem };
 
 pub struct ItemCollectionSystem {}
@@ -40,7 +40,7 @@ impl<'a> System<'a> for ItemUseSystem {
     #[allow(clippy::type_complexity)]
     type SystemData = ( ReadExpect<'a, Entity>,
                         WriteExpect<'a, GameLog>,
-                        ReadExpect<'a, Map>,
+                        WriteExpect<'a, Map>,
                         Entities<'a>,
                         WriteStorage<'a, WantsToUseItem>,
                         ReadStorage<'a, Name>,
@@ -57,13 +57,16 @@ impl<'a> System<'a> for ItemUseSystem {
                         WriteExpect<'a, ParticleBuilder>,
                         ReadStorage<'a, Position>,
                         ReadStorage<'a, ProvidesFood>,
-                        WriteStorage<'a, HungerClock>
+                        WriteStorage<'a, HungerClock>,
+                        ReadStorage<'a, MagicMapper>,
+                        WriteExpect<'a, RunState>
                       );
 
     fn run(&mut self, data : Self::SystemData) {
-        let (player_entity, mut gamelog, map, entities, mut wants_use, names, consumables, healing,
+        let (player_entity, mut gamelog, mut map, entities, mut wants_use, names, consumables, healing,
              inflict_damage, mut combat_stats, mut suffer_damage, aoe, mut confused, equippable,
-             mut equipped, mut backpack, mut particle_builder, positions, provides_food, mut hunger_clocks) = data;
+             mut equipped, mut backpack, mut particle_builder, positions, provides_food, mut hunger_clocks,
+             magic_mapper, mut runstate) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
             let mut used_item = true;
@@ -132,6 +135,37 @@ impl<'a> System<'a> for ItemUseSystem {
                 }
             }
 
+            // It it is edible, eat it!
+            let item_edible = provides_food.get(useitem.item);
+            match item_edible {
+                None => {}
+                Some(_) => {
+                    used_item = true;
+                    let target = targets[0];
+                    let hc = hunger_clocks.get_mut(target);
+                    if let Some(hc) = hc {
+                        hc.state = HungerState::WellFed;
+                        hc.duration = 20;
+                        gamelog.entries.push(format!("You eat the {}.", names.get(useitem.item).unwrap().name));
+                    }
+                }
+            }
+
+            // If its a magic mapper...
+            // TODO adjust behavior to only reveal accessible areas. eg a wall surrounded by other walls won't be rendered.
+            //      has a profound effect on how nice the game looks
+            let is_mapper = magic_mapper.get(useitem.item);
+            match is_mapper {
+                None => {}
+                Some(_) => {
+                    used_item = true;
+                    for r in map.revealed_tiles.iter_mut() {
+                        *r = true;
+                    }
+                    gamelog.entries.push("The map is revealed to you!".to_string());
+                }
+            }
+
             let consumable = consumables.get(useitem.item);
             match consumable {
                 None => {}
@@ -160,22 +194,6 @@ impl<'a> System<'a> for ItemUseSystem {
                                 particle_builder.request(pos.x, pos.y, rltk::RGB::named(rltk::GREEN), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('♥'), 200.0);
                             }
                         }                        
-                    }
-                }
-            }
- 
-            // It it is edible, eat it!
-            let item_edible = provides_food.get(useitem.item);
-            match item_edible {
-                None => {}
-                Some(_) => {
-                    used_item = true;
-                    let target = targets[0];
-                    let hc = hunger_clocks.get_mut(target);
-                    if let Some(hc) = hc {
-                        hc.state = HungerState::WellFed;
-                        hc.duration = 20;
-                        gamelog.entries.push(format!("You eat the {}.", names.get(useitem.item).unwrap().name));
                     }
                 }
             }
