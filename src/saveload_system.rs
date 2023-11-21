@@ -64,7 +64,7 @@ pub fn save_game(ecs : &mut World) {
             Name, BlocksTile, CombatStats, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage, 
             AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem,
             WantsToDropItem, Equippable, Equipped, MeleePowerBonus, DefenseBonus, ParticleLifetime, HungerClock, 
-            ProvidesFood, MagicMapper, SerializationHelper
+            ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved, SingleActivation, SerializationHelper
         );
     }
 
@@ -99,7 +99,7 @@ pub fn load_game(ecs: &mut World) {
             Name, BlocksTile, CombatStats, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage, 
             AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem,
             WantsToDropItem, Equippable, Equipped, MeleePowerBonus, DefenseBonus, ParticleLifetime, HungerClock,
-            ProvidesFood, MagicMapper, SerializationHelper
+            ProvidesFood, MagicMapper, Hidden, EntryTrigger, EntityMoved, SingleActivation, SerializationHelper
         );
     }
 

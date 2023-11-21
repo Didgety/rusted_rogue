@@ -1,7 +1,7 @@
 use rltk::{ Point, Rltk, VirtualKeyCode };
 use specs::prelude::*;
 use std::cmp::{max, min};
-use super::{ CombatStats, gamelog::GameLog, HungerClock, HungerState, Item, Position, Player, RunState, State,
+use super::{ CombatStats, EntityMoved, gamelog::GameLog, HungerClock, HungerState, Item, Position, Player, RunState, State,
              TileType, Map, Monster, Viewshed, WantsToMelee, WantsToPickupItem };
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
@@ -11,6 +11,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let combat_stats = ecs.read_storage::<CombatStats>();
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
+    let mut entity_moved = ecs.write_storage::<EntityMoved>();
 
     let map = ecs.fetch::<Map>();
 
@@ -38,6 +39,8 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             let mut ppos = ecs.write_resource::<Point>();
             ppos.x = pos.x;
             ppos.y = pos.y;
+
+            entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker"); // moved last turn
         }
     }
 }
