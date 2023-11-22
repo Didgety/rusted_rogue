@@ -153,7 +153,8 @@ impl<'a> System<'a> for ItemUseSystem {
 
             // If its a magic mapper...
             // TODO adjust behavior to only reveal accessible areas. eg a wall surrounded by other walls won't be rendered.
-            //      has a profound effect on how nice the game looks
+            //      has a profound effect on how nice the game looks.
+            //      Can be achieved by checking neighboring tiles, if ANY tile is not a wall it should be rendered
             let is_mapper = magic_mapper.get(useitem.item);
             match is_mapper {
                 None => {}
