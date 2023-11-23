@@ -1,4 +1,6 @@
 use super::{ Map, Rect, TileType, Position, SHOW_MAPGEN, spawner };
+mod bsp_dungeon;
+use bsp_dungeon::BspDungeonBuilder;
 mod simple_map;
 use simple_map::SimpleMapBuilder;
 mod common;
@@ -16,6 +18,17 @@ pub trait MapBuilder {
 }
 
 pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
-    // Note that until we have a second map type, this isn't even slighlty random
-    Box::new(SimpleMapBuilder::new(new_depth))
+    // Debug Generators
+    // Basic
+    //Box::new(SimpleMapBuilder::new(new_depth))
+    // BSP
+    Box::new(BspDungeonBuilder::new(new_depth))
+
+    // Fully random generator
+    // let mut rng = rltk::RandomNumberGenerator::new();
+    // let builder = rng.roll_dice(1, 2);
+    // match builder {
+    //     1 => Box::new(BspDungeonBuilder::new(new_depth)),
+    //     _ => Box::new(SimpleMapBuilder::new(new_depth))
+    // }
 }
