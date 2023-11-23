@@ -1,4 +1,4 @@
-use super::{ Map, Rect, TileType, Position, spawner };
+use super::{ Map, Rect, TileType, Position, SHOW_MAPGEN, spawner };
 mod simple_map;
 use simple_map::SimpleMapBuilder;
 mod common;
@@ -11,6 +11,8 @@ pub trait MapBuilder {
     fn spawn_entities(&mut self, ecs : &mut World);
     fn get_map(&self) -> Map;
     fn get_starting_position(&self) -> Position;
+    fn get_snapshot_history(&self) -> Vec<Map>;
+    fn take_snapshot(&mut self);
 }
 
 pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {

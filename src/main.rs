@@ -36,6 +36,8 @@ pub mod rex_assets;
 pub mod trigger_system;
 pub mod map_builders;
 
+const SHOW_MAPGEN : bool = true;
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { AwaitingInput, 
                     PreRun, 
@@ -49,11 +51,16 @@ pub enum RunState { AwaitingInput,
                     SaveGame,
                     NextLevel,
                     GameOver,
-                    MagicMapReveal { row : i32 }
+                    MagicMapReveal { row : i32 },
+                    MapGeneration
                   }
 
 pub struct State {
     pub ecs: World,
+    mapgen_next_state : Option<RunState>,
+    mapgen_history : Vec<Map>,
+    mapgen_index : usize,
+    mapgen_timer : f32
 }
 
 impl State {
@@ -176,8 +183,13 @@ impl State {
     }
 
     fn generate_world_map(&mut self, new_depth : i32) {
+        // TODO add "loading" text when showing this on screen
+        self.mapgen_index = 0;
+        self.mapgen_timer = 0.0;
+        self.mapgen_history.clear();
         let mut builder = map_builders::random_builder(new_depth);
         builder.build_map();
+        self.mapgen_history = builder.get_snapshot_history();
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
@@ -225,7 +237,7 @@ impl GameState for State {
             _ => {
                 // keeps borrow checker happy          
                 {
-                    draw_map(&self.ecs, ctx);
+                    draw_map(&self.ecs.fetch::<Map>(), ctx);
                     let positions = self.ecs.read_storage::<Position>();
                     let renderables = self.ecs.read_storage::<Renderable>();
                     let hidden = self.ecs.read_storage::<Hidden>();
@@ -370,6 +382,22 @@ impl GameState for State {
                     newrunstate = RunState::MagicMapReveal{ row: row+1 };
                 }
             }
+            RunState::MapGeneration => {
+                if !SHOW_MAPGEN {
+                    newrunstate = self.mapgen_next_state.unwrap();
+                }
+                ctx.cls();                
+                draw_map(&self.mapgen_history[self.mapgen_index], ctx);
+        
+                self.mapgen_timer += ctx.frame_time_ms;
+                if self.mapgen_timer > 300.0 {
+                    self.mapgen_timer = 0.0;
+                    self.mapgen_index += 1;
+                    if self.mapgen_index >= self.mapgen_history.len() {
+                        newrunstate = self.mapgen_next_state.unwrap();
+                    }
+                }
+            }
         }
 
         {
@@ -391,6 +419,10 @@ fn main() -> rltk::BError {
 
     let mut gs = State {
         ecs: World::new(),
+        mapgen_next_state : Some(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame }),
+        mapgen_index : 0,
+        mapgen_history: Vec::new(),
+        mapgen_timer: 0.0
     };
     // Register all components with the ECS
     gs.ecs.register::<Position>();
@@ -441,7 +473,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(rex_assets::RexAssets::new());
 
     gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Rusty Rogue".to_string()] });
-    gs.ecs.insert(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
+    //gs.ecs.insert(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
+    gs.ecs.insert(RunState::MapGeneration{} );
 
     // generate level 1
     gs.generate_world_map(1);
