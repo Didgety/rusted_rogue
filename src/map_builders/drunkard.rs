@@ -4,12 +4,22 @@ use rltk::RandomNumberGenerator;
 use specs::prelude::*;
 use std::collections::HashMap;
 
+#[derive(PartialEq, Copy, Clone)]
+pub enum DrunkSpawnMode { StartingPoint, Random }
+
+pub struct DrunkardSettings {
+    pub spawn_mode : DrunkSpawnMode,
+    pub drunken_lifetime : i32,
+    pub floor_percent: f32
+}
+
 pub struct DrunkardsWalkBuilder {
     map : Map,
     starting_position : Position,
     depth: i32,
     history: Vec<Map>,
-    noise_areas : HashMap<i32, Vec<usize>>
+    noise_areas : HashMap<i32, Vec<usize>>,
+    settings : DrunkardSettings
 }
 
 impl MapBuilder for DrunkardsWalkBuilder {
@@ -47,13 +57,66 @@ impl MapBuilder for DrunkardsWalkBuilder {
 }
 
 impl DrunkardsWalkBuilder {
-    pub fn new(new_depth : i32) -> DrunkardsWalkBuilder {
+    /// Options for settings:
+    /// StartingPoint - All drunkards spawn in the middle.
+    /// Random - All drunkards after the first have a random starting location.
+    pub fn new(new_depth : i32, settings : DrunkardSettings) -> DrunkardsWalkBuilder {
         DrunkardsWalkBuilder{
             map : Map::new(new_depth),
             starting_position : Position{ x: 0, y : 0 },
             depth : new_depth,
             history: Vec::new(),
-            noise_areas : HashMap::new()
+            noise_areas : HashMap::new(),
+            settings
+        }
+    }
+
+    /// Preset settings for a wide open cavern type map
+    pub fn open_area(new_depth : i32) -> DrunkardsWalkBuilder {
+        DrunkardsWalkBuilder{
+            map : Map::new(new_depth),
+            starting_position : Position{ x: 0, y : 0 },
+            depth : new_depth,
+            history: Vec::new(),
+            noise_areas : HashMap::new(),
+            settings : DrunkardSettings{
+                spawn_mode: DrunkSpawnMode::StartingPoint,
+                drunken_lifetime: 400,
+                floor_percent: 0.5
+            }
+        }
+    }
+    
+
+    /// Preset settings for smaller medium size connected caverns
+    pub fn open_halls(new_depth : i32) -> DrunkardsWalkBuilder {
+        DrunkardsWalkBuilder{
+            map : Map::new(new_depth),
+            starting_position : Position{ x: 0, y : 0 },
+            depth : new_depth,
+            history: Vec::new(),
+            noise_areas : HashMap::new(),
+            settings : DrunkardSettings{
+                spawn_mode: DrunkSpawnMode::Random,
+                drunken_lifetime: 400,
+                floor_percent: 0.5
+            }
+        }
+    }
+    
+    /// Preset settings for narrow interconnected caverns
+    pub fn winding_passages(new_depth : i32) -> DrunkardsWalkBuilder {
+        DrunkardsWalkBuilder{
+            map : Map::new(new_depth),
+            starting_position : Position{ x: 0, y : 0 },
+            depth : new_depth,
+            history: Vec::new(),
+            noise_areas : HashMap::new(),
+            settings : DrunkardSettings{
+                spawn_mode: DrunkSpawnMode::Random,
+                drunken_lifetime: 100,
+                floor_percent: 0.4
+            }
         }
     }
 
@@ -67,8 +130,7 @@ impl DrunkardsWalkBuilder {
         self.map.tiles[start_idx] = TileType::Floor;
 
         let total_tiles = self.map.width * self.map.height;
-        // Change to increase % of map to be floor
-        let desired_floor_tiles = (total_tiles / 2) as usize;
+        let desired_floor_tiles = (self.settings.floor_percent * total_tiles as f32) as usize;
         let mut floor_tile_count = self.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
         let mut digger_count = 0;
         let mut active_digger_count = 0;
@@ -77,7 +139,23 @@ impl DrunkardsWalkBuilder {
             let mut did_something = false;
             let mut drunk_x = self.starting_position.x;
             let mut drunk_y = self.starting_position.y;
-            let mut drunk_life = 400;
+            match self.settings.spawn_mode {
+                DrunkSpawnMode::StartingPoint => {
+                    drunk_x = self.starting_position.x;
+                    drunk_y = self.starting_position.y;
+                }
+                // each drunkard after the first has a random starting point
+                DrunkSpawnMode::Random => {
+                    if digger_count == 0 {
+                        drunk_x = self.starting_position.x;
+                        drunk_y = self.starting_position.y;
+                    } else {
+                        drunk_x = rng.roll_dice(1, self.map.width - 3) + 1;
+                        drunk_y = rng.roll_dice(1, self.map.height - 3) + 1;
+                    }
+                }
+            }
+            let mut drunk_life = self.settings.drunken_lifetime;
 
             while drunk_life > 0 {
                 let drunk_idx = self.map.xy_idx(drunk_x, drunk_y);
