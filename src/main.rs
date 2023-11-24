@@ -357,8 +357,9 @@ impl GameState for State {
                 newrunstate = RunState::MainMenu{ menu_selection : gui::MainMenuSelection::LoadGame };
             }
             RunState::NextLevel => {
-                self.goto_next_level();                
-                newrunstate = RunState::PreRun;
+                self.goto_next_level();
+                self.mapgen_next_state = Some(RunState::PreRun);
+                newrunstate = RunState::MapGeneration;
             }
             RunState::GameOver => {
                 let result = gui::game_over(ctx);
@@ -366,7 +367,8 @@ impl GameState for State {
                     gui::GameOverResult::NoSelection => {}
                     gui::GameOverResult::QuitToMenu => {
                         self.game_over_cleanup();
-                        newrunstate = RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame };
+                        newrunstate = RunState::MapGeneration;
+                        self.mapgen_next_state = Some(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
                     }
                 }
             }            
