@@ -71,7 +71,10 @@ pub fn spawn_room(ecs: &mut World, room : &Rect, map_depth : i32) {
             let mut added = false;
             let mut tries = 0;
             while !added && tries < 20 {
-                // TODO verify using 1 instead of 0 as min fixes item spawning issues in bsp_interiors
+                // TODO Implement another version with the below code for bsp_interiors or find and fix the bug causing
+                //      off by one in the east an south direction for item spawns.
+                // let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1)) - 1) as usize;
+                // let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1)) - 1) as usize;
                 let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
                 let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
                 let idx = (y * MAPWIDTH) + x;
