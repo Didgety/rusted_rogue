@@ -3,6 +3,8 @@ mod bsp_interior;
 use bsp_interior::BspInteriorBuilder;
 mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
+mod cellular_automata;
+use cellular_automata::CellularAutomataBuilder;
 mod simple_map;
 use simple_map::SimpleMapBuilder;
 mod common;
@@ -26,8 +28,10 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // BSP
     //Box::new(BspDungeonBuilder::new(new_depth))
     // BSP Interior
-    Box::new(BspInteriorBuilder::new(new_depth))
-
+    //Box::new(BspInteriorBuilder::new(new_depth))
+    // Cellular Automata
+    Box::new(CellularAutomataBuilder::new(new_depth))
+    
     // Fully random generator
     // let mut rng = rltk::RandomNumberGenerator::new();
     // let builder = rng.roll_dice(1, 3);
