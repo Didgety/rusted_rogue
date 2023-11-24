@@ -5,6 +5,8 @@ mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod cellular_automata;
 use cellular_automata::CellularAutomataBuilder;
+mod drunkard;
+use drunkard::DrunkardsWalkBuilder;
 mod simple_map;
 use simple_map::SimpleMapBuilder;
 mod common;
@@ -30,7 +32,9 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // BSP Interior
     //Box::new(BspInteriorBuilder::new(new_depth))
     // Cellular Automata
-    Box::new(CellularAutomataBuilder::new(new_depth))
+    //Box::new(CellularAutomataBuilder::new(new_depth))
+    // Drunkards Walk
+    Box::new(DrunkardsWalkBuilder::new(new_depth))
 
     // Fully random generator
     // let mut rng = rltk::RandomNumberGenerator::new();
@@ -39,6 +43,7 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     //     1 => Box::new(BspDungeonBuilder::new(new_depth)),
     //     2 => Box::new(BspInteriorBuilder::new(new_depth)),
     //     3 => Box::new(CellularAutomataBuilder::new(new_depth)),
+    //     4 => Box::new(DrunkardsWalkBuilder::new(new_depth)),
     //     _ => Box::new(SimpleMapBuilder::new(new_depth))
     // }
 }
