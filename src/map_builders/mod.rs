@@ -5,6 +5,8 @@ mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod cellular_automata;
 use cellular_automata::CellularAutomataBuilder;
+mod dla;
+use dla::*;
 mod drunkard;
 use drunkard::*;
 mod maze;
@@ -48,7 +50,16 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // - passages
     // Box::new(DrunkardsWalkBuilder::winding_passages(new_depth))
     // Maze
-    Box::new(MazeBuilder::new(new_depth))
+    // Box::new(MazeBuilder::new(new_depth))
+    // DLA
+    // walk in
+    // DLABuilder::walk_inwards(new_depth)
+    // walk out
+    // DLABuilder::walk_outwards(new_depth)
+    // central attractor
+    // DLABuilder::central_attractor(new_depth)
+    // insectoid
+    Box::new(DLABuilder::insectoid(new_depth))
 
     // Fully random generator
     // let mut rng = rltk::RandomNumberGenerator::new();
@@ -61,6 +72,10 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     //     5 => Box::new(DrunkardsWalkBuilder::open_halls(new_depth)),
     //     6 => Box::new(DrunkardsWalkBuilder::winding_passages(new_depth)),
     //     7 => Box::new(MazeBuilder::new(new_depth)),
+    //     8 => Box::new(DLABuilder::walk_inwards(new_depth)),
+    //     9 => Box::new(DLABuilder::walk_outwards(new_depth)),
+    //     10 => Box::new(DLABuilder::central_attractor(new_depth)),
+    //     11 => Box::new(DLABuilder::insectoid(new_depth)),
     //     _ => Box::new(SimpleMapBuilder::new(new_depth))
-    // }    
+    // } 
 }
