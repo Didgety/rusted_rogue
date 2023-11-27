@@ -212,7 +212,11 @@ impl DLABuilder {
                 _ => {}
 
             }
-            self.take_snapshot();
+
+            // change the modulus value to adjust the speed the map renders
+            if floor_tile_count % 15 == 0 {
+                self.take_snapshot();
+            }
 
             floor_tile_count = self.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
         }
