@@ -5,6 +5,8 @@ mod bsp_dungeon;
 use bsp_dungeon::BspDungeonBuilder;
 mod cellular_automata;
 use cellular_automata::CellularAutomataBuilder;
+mod common;
+use common::*;
 mod dla;
 use dla::*;
 mod drunkard;
@@ -13,8 +15,8 @@ mod maze;
 use maze::MazeBuilder;
 mod simple_map;
 use simple_map::SimpleMapBuilder;
-mod common;
-use common::*;
+mod voronoi;
+use voronoi::*;
 use specs::prelude::*;
 
 // Traits are like interfaces!
@@ -52,7 +54,7 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // - fat passages
     // Box::new(DrunkardsWalkBuilder::fat_passages(new_depth))
     // - fearful symmetry
-    Box::new(DrunkardsWalkBuilder::fearful_symmetry(new_depth))
+    // Box::new(DrunkardsWalkBuilder::fearful_symmetry(new_depth))
     // Maze
     // Box::new(MazeBuilder::new(new_depth))
     // DLA
@@ -64,6 +66,8 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // Box::new(DLABuilder::central_attractor(new_depth))
     // - insectoid
     // Box::new(DLABuilder::insectoid(new_depth))
+    // Voronoi Cells
+    Box::new(VoronoiCellBuilder::new(new_depth))
 
     // Fully random generator
     // let mut rng = rltk::RandomNumberGenerator::new();
