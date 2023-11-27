@@ -4,6 +4,9 @@ use rltk::RandomNumberGenerator;
 use specs::prelude::*;
 use std::collections::HashMap;
 
+/// Pythagoras - Direct line, more natural.
+/// Manhattan - Sum of all distances between source and dest. Like a taxi driver, straighter walls.
+/// Chebyshev - Similar to Manhattan but accounts for diagonals. Tends to have thicker walls.
 #[derive(PartialEq, Copy, Clone)]
 pub enum DistanceAlgorithm { Pythagoras, Manhattan, Chebyshev }
 
@@ -64,6 +67,42 @@ impl VoronoiCellBuilder {
             distance_algorithm: DistanceAlgorithm::Pythagoras
         }
     }
+    
+    pub fn pythagoras(new_depth : i32) -> VoronoiCellBuilder {
+        VoronoiCellBuilder{
+            map : Map::new(new_depth),
+            starting_position : Position{ x: 0, y : 0 },
+            depth : new_depth,
+            history: Vec::new(),
+            noise_areas : HashMap::new(),
+            n_seeds: 64,
+            distance_algorithm: DistanceAlgorithm::Pythagoras
+        }
+    }
+
+    pub fn manhattan(new_depth : i32) -> VoronoiCellBuilder {
+        VoronoiCellBuilder{
+            map : Map::new(new_depth),
+            starting_position : Position{ x: 0, y : 0 },
+            depth : new_depth,
+            history: Vec::new(),
+            noise_areas : HashMap::new(),
+            n_seeds: 64,
+            distance_algorithm: DistanceAlgorithm::Manhattan
+        }
+    }
+
+    pub fn chebyshev(new_depth : i32) -> VoronoiCellBuilder {
+        VoronoiCellBuilder{
+            map : Map::new(new_depth),
+            starting_position : Position{ x: 0, y : 0 },
+            depth : new_depth,
+            history: Vec::new(),
+            noise_areas : HashMap::new(),
+            n_seeds: 64,
+            distance_algorithm: DistanceAlgorithm::Chebyshev
+        }
+    }
 
     #[allow(clippy::map_entry)]
     fn build(&mut self) {
@@ -92,10 +131,27 @@ impl VoronoiCellBuilder {
             let y = i as i32 / self.map.width;
 
             for (seed, pos) in voronoi_seeds.iter().enumerate() {
-                let distance = rltk::DistanceAlg::PythagorasSquared.distance2d(
-                    rltk::Point::new(x, y), 
-                    pos.1
-                );
+                let distance;
+                match self.distance_algorithm {           
+                    DistanceAlgorithm::Pythagoras => {
+                        distance = rltk::DistanceAlg::PythagorasSquared.distance2d(
+                            rltk::Point::new(x, y), 
+                            pos.1
+                        );
+                    }
+                    DistanceAlgorithm::Manhattan => {
+                        distance = rltk::DistanceAlg::Manhattan.distance2d(
+                            rltk::Point::new(x, y), 
+                            pos.1
+                        );
+                    }
+                    DistanceAlgorithm::Chebyshev => {
+                        distance = rltk::DistanceAlg::Chebyshev.distance2d(
+                            rltk::Point::new(x, y), 
+                            pos.1
+                        );
+                    }
+                }
                 voronoi_distance[seed] = (seed, distance);
             }
 
