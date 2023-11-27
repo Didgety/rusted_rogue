@@ -1,5 +1,4 @@
-use super::{MapBuilder, Map, Symmetry, 
-    TileType, Position, paint, spawner, SHOW_MAPGEN,
+use super::{MapBuilder, Map, Symmetry, TileType, Position, paint, spawner, SHOW_MAPGEN,
     remove_unreachable_areas_returning_most_distant, generate_voronoi_spawn_regions};
 use rltk::RandomNumberGenerator;
 use specs::prelude::*;
