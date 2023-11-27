@@ -49,17 +49,21 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // Box::new(DrunkardsWalkBuilder::open_halls(new_depth))
     // - passages
     // Box::new(DrunkardsWalkBuilder::winding_passages(new_depth))
+    // - fat passages
+    // Box::new(DrunkardsWalkBuilder::fat_passages(new_depth))
+    // - fearful symmetry
+    Box::new(DrunkardsWalkBuilder::fearful_symmetry(new_depth))
     // Maze
     // Box::new(MazeBuilder::new(new_depth))
     // DLA
-    // walk in
-    // DLABuilder::walk_inwards(new_depth)
-    // walk out
-    // DLABuilder::walk_outwards(new_depth)
-    // central attractor
-    // DLABuilder::central_attractor(new_depth)
-    // insectoid
-    Box::new(DLABuilder::insectoid(new_depth))
+    // - walk in
+    // Box::new(DLABuilder::walk_inwards(new_depth))
+    // - walk out
+    // Box::new(DLABuilder::walk_outwards(new_depth))
+    // - central attractor
+    // Box::new(DLABuilder::central_attractor(new_depth))
+    // - insectoid
+    // Box::new(DLABuilder::insectoid(new_depth))
 
     // Fully random generator
     // let mut rng = rltk::RandomNumberGenerator::new();
