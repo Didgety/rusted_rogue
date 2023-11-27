@@ -67,7 +67,12 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // - insectoid
     // Box::new(DLABuilder::insectoid(new_depth))
     // Voronoi Cells
-    Box::new(VoronoiCellBuilder::new(new_depth))
+    // - pythagoras
+    //Box::new(VoronoiCellBuilder::pythagoras(new_depth))
+    // - manhattan
+    //Box::new(VoronoiCellBuilder::manhattan(new_depth))
+    // - chebyshev
+    Box::new(VoronoiCellBuilder::chebyshev(new_depth))
 
     // Fully random generator
     // let mut rng = rltk::RandomNumberGenerator::new();
