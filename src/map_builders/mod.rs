@@ -17,6 +17,8 @@ mod simple_map;
 use simple_map::SimpleMapBuilder;
 mod voronoi;
 use voronoi::*;
+mod wavefunction_collapse;
+use wavefunction_collapse::*;
 use specs::prelude::*;
 
 // Traits are like interfaces!
@@ -68,12 +70,12 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // Box::new(DLABuilder::insectoid(new_depth))
     // Voronoi Cells
     // - pythagoras
-    //Box::new(VoronoiCellBuilder::pythagoras(new_depth))
+    // Box::new(VoronoiCellBuilder::pythagoras(new_depth))
     // - manhattan
-    //Box::new(VoronoiCellBuilder::manhattan(new_depth))
+    // Box::new(VoronoiCellBuilder::manhattan(new_depth))
     // - chebyshev
-    Box::new(VoronoiCellBuilder::chebyshev(new_depth))
-
+    // Box::new(VoronoiCellBuilder::chebyshev(new_depth))
+    Box::new(WavefunctionCollapseBuilder::new(new_depth))
     // Fully random generator
     // let mut rng = rltk::RandomNumberGenerator::new();
     // let builder = rng.roll_dice(1, 8);
