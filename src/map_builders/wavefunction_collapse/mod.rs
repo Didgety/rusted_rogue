@@ -3,6 +3,12 @@ use super::{MapBuilder, Map, TileType, Position, spawner, SHOW_MAPGEN,
 use rltk::RandomNumberGenerator;
 use specs::prelude::*;
 use std::collections::HashMap;
+mod common;
+use common::*;
+mod constraints;
+use constraints::*;
+mod image_loader;
+use image_loader::*;
 
 pub struct WavefunctionCollapseBuilder {
     map : Map,
@@ -60,15 +66,23 @@ impl WavefunctionCollapseBuilder {
     fn build(&mut self) {
         let mut rng = RandomNumberGenerator::new();
 
-        // TODO: Builder goes here
+        const CHUNK_SIZE :i32 = 7;
+
+        self.map = load_rex_map(self.depth, &rltk::rex::XpFile::from_resource("../../resources/wfc-demo1.xp").unwrap());
+        self.take_snapshot();
+
+        let patterns = build_patterns(&self.map, CHUNK_SIZE, true, true);
+        // self.render_tile_gallery(&patterns, CHUNK_SIZE);
+        let constraints = patterns_to_constraints(patterns, CHUNK_SIZE);
+        self.render_tile_gallery(&constraints, CHUNK_SIZE);
 
         // Find a starting point; start at the middle and walk left until we find an open tile
         self.starting_position = Position{ x: self.map.width / 2, y : self.map.height / 2 };
         let mut start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
-        while self.map.tiles[start_idx] != TileType::Floor {
-            self.starting_position.x -= 1;
-            start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
-        }
+        // while self.map.tiles[start_idx] != TileType::Floor {
+        //     self.starting_position.x -= 1;
+        //     start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
+        // }
         self.take_snapshot();
 
         // Find all tiles we can reach from the starting point
@@ -81,6 +95,35 @@ impl WavefunctionCollapseBuilder {
 
         // Now we build a noise map for use in spawning entities later
         self.noise_areas = generate_voronoi_spawn_regions(&self.map, &mut rng);
+    }
+
+    fn render_tile_gallery(&mut self, constraints: &Vec<MapChunk>, chunk_size: i32) {
+        self.map = Map::new(0);
+        let mut counter = 0;
+        let mut x = 1;
+        let mut y = 1;
+        while counter < constraints.len() {
+            render_pattern_to_map(&mut self.map, &constraints[counter], chunk_size, x, y);
+    
+            x += chunk_size + 1;
+            if x + chunk_size > self.map.width {
+                // Move to the next row
+                x = 1;
+                y += chunk_size + 1;
+    
+                if y + chunk_size > self.map.height {
+                    // Move to the next page
+                    self.take_snapshot();
+                    self.map = Map::new(0);
+    
+                    x = 1;
+                    y = 1;
+                }
+            }
+    
+            counter += 1;
+        }
+        self.take_snapshot();
     }
 
 }
