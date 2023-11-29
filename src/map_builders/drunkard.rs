@@ -62,6 +62,7 @@ impl DrunkardsWalkBuilder {
     /// Options for settings:
     /// StartingPoint - All drunkards spawn in the middle.
     /// Random - All drunkards after the first have a random starting location.
+    #[allow(dead_code)]
     pub fn new(new_depth : i32, settings : DrunkardSettings) -> DrunkardsWalkBuilder {
         DrunkardsWalkBuilder{
             map : Map::new(new_depth),
