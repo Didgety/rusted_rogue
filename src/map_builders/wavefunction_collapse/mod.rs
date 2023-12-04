@@ -7,15 +7,17 @@ mod common;
 use common::*;
 mod constraints;
 use constraints::*;
-mod image_loader;
-use image_loader::*;
+mod solver;
+use solver::*;
 
+/// Provides a map builder using the Wave Function Collapse algorithm
 pub struct WavefunctionCollapseBuilder {
     map : Map,
     starting_position : Position,
     depth: i32,
     history: Vec<Map>,
-    noise_areas : HashMap<i32, Vec<usize>>
+    noise_areas : HashMap<i32, Vec<usize>>,
+    derive_from : Option<Box<dyn MapBuilder>>
 }
 
 impl MapBuilder for WavefunctionCollapseBuilder {
@@ -53,36 +55,69 @@ impl MapBuilder for WavefunctionCollapseBuilder {
 }
 
 impl WavefunctionCollapseBuilder {
-    pub fn new(new_depth : i32) -> WavefunctionCollapseBuilder {
+    // Generic constructor for waveform collapse.
+    /// # Arguments
+    /// * new_depth - the new map depth
+    /// * derive_from - either None, or a boxed MapBuilder, as output by `random_builder`
+    pub fn new(new_depth : i32, derive_from : Option<Box<dyn MapBuilder>>) -> WavefunctionCollapseBuilder {
         WavefunctionCollapseBuilder{
             map : Map::new(new_depth),
             starting_position : Position{ x: 0, y : 0 },
             depth : new_depth,
             history: Vec::new(),
-            noise_areas : HashMap::new()
+            noise_areas : HashMap::new(),
+            derive_from
         }
     }    
 
+    /// Derives a map from a pre-existing map builder.
+    /// # Arguments
+    /// * new_depth - the new map depth
+    /// * derive_from - either None, or a boxed MapBuilder, as output by `random_builder`
+    pub fn derived_map(new_depth: i32, builder: Box<dyn MapBuilder>) -> WavefunctionCollapseBuilder {
+        WavefunctionCollapseBuilder::new(new_depth, Some(builder))
+    }
+
     fn build(&mut self) {
+        // if self.mode == WavefunctionMode::TestMap {
+        //     //self.map = load_rex_map(self.depth, &rltk::rex::XpFile::from_resource("../../resources/wfc-demo1.xp").unwrap());
+        //     self.take_snapshot();
+        //     return;
+        // }
+
         let mut rng = RandomNumberGenerator::new();
 
-        const CHUNK_SIZE :i32 = 7;
-
-        self.map = load_rex_map(self.depth, &rltk::rex::XpFile::from_resource("../../resources/wfc-demo1.xp").unwrap());
+        const CHUNK_SIZE :i32 = 8;
+        
+        let prebuilder = &mut self.derive_from.as_mut().unwrap();
+        prebuilder.build_map();
+        self.map = prebuilder.get_map();
+        for t in self.map.tiles.iter_mut() {
+            if *t == TileType::DownStairs { *t = TileType::Floor; }
+        }
         self.take_snapshot();
 
         let patterns = build_patterns(&self.map, CHUNK_SIZE, true, true);
-        // self.render_tile_gallery(&patterns, CHUNK_SIZE);
         let constraints = patterns_to_constraints(patterns, CHUNK_SIZE);
         self.render_tile_gallery(&constraints, CHUNK_SIZE);
+
+        self.map = Map::new(self.depth);
+        loop {
+            let mut solver = Solver::new(constraints.clone(), CHUNK_SIZE, &self.map);
+            while !solver.iteration(&mut self.map, &mut rng) {
+                self.take_snapshot();
+            }
+            self.take_snapshot();
+            if solver.possible { break; } // If it has hit an impossible condition, try again
+        }
 
         // Find a starting point; start at the middle and walk left until we find an open tile
         self.starting_position = Position{ x: self.map.width / 2, y : self.map.height / 2 };
         let mut start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
-        // while self.map.tiles[start_idx] != TileType::Floor {
-        //     self.starting_position.x -= 1;
-        //     start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
-        // }
+        while self.map.tiles[start_idx] != TileType::Floor {
+            self.starting_position.x -= 1;
+            start_idx = self.map.xy_idx(self.starting_position.x, self.starting_position.y);
+        }
         self.take_snapshot();
 
         // Find all tiles we can reach from the starting point

@@ -13,6 +13,8 @@ mod drunkard;
 use drunkard::*;
 mod maze;
 use maze::MazeBuilder;
+mod prefab_builder;
+use prefab_builder::*;
 mod simple_map;
 use simple_map::SimpleMapBuilder;
 mod voronoi;
@@ -76,8 +78,11 @@ pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
     // - chebyshev
     // Box::new(VoronoiCellBuilder::chebyshev(new_depth))
     // Wavefunction collapse
-    let m = Box::new(WavefunctionCollapseBuilder::test_map(new_depth));
-    Box::new(WavefunctionCollapseBuilder::derived_map(new_depth, m))
+    // let m = Box::new(WavefunctionCollapseBuilder::new(new_depth, None));
+    // Box::new(WavefunctionCollapseBuilder::derived_map(new_depth, m))
+    // Prefabs
+    Box::new(PrefabBuilder::new(new_depth))
+
     // Fully random generator
     // let mut rng = rltk::RandomNumberGenerator::new();
     // let builder = rng.roll_dice(1, 8);
