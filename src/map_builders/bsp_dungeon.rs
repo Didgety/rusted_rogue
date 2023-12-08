@@ -9,7 +9,8 @@ pub struct BspDungeonBuilder {
     depth: i32,
     rooms: Vec<Rect>,
     history: Vec<Map>,
-    rects: Vec<Rect>
+    rects: Vec<Rect>,
+    spawn_list: Vec<(usize, String)>
 }
 
 impl MapBuilder for BspDungeonBuilder {
@@ -29,10 +30,14 @@ impl MapBuilder for BspDungeonBuilder {
         self.build();
     }
 
-    fn spawn_entities(&mut self, ecs : &mut World) {
-        for room in self.rooms.iter().skip(1) {
-            spawner::spawn_room(ecs, room, self.depth);
-        }
+    // fn spawn_entities(&mut self, ecs : &mut World) {
+    //     for room in self.rooms.iter().skip(1) {
+    //         spawner::spawn_room(ecs, room, self.depth);
+    //     }
+    // }
+
+    fn get_spawn_list(&self) -> &Vec<(usize, String)> {
+        &self.spawn_list
     }
 
     fn take_snapshot(&mut self) {
@@ -54,7 +59,8 @@ impl BspDungeonBuilder {
             depth : new_depth,
             rooms: Vec::new(),
             history: Vec::new(),
-            rects: Vec::new()
+            rects: Vec::new(),
+            spawn_list: Vec::new()
         }
     }
 
@@ -102,8 +108,14 @@ impl BspDungeonBuilder {
         let stairs_idx = self.map.xy_idx(stairs.0, stairs.1);
         self.map.tiles[stairs_idx] = TileType::DownStairs;
 
+        // Player
         let start = self.rooms[0].center();
         self.starting_position = Position{ x: start.0, y: start.1 };
+
+        // Spawn some entities
+        for room in self.rooms.iter().skip(1) {
+            spawner::spawn_room(&self.map, &mut rng, room, self.depth, &mut self.spawn_list);
+        }
     }
 
     /// Partitions a rectangle into 4 evenly sized subrectangles
