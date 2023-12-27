@@ -6,6 +6,8 @@
 
 A small roguelike program featuring procedural map generation written entirely in rust
 
+A work in progress, and sandbox of sorts for me to play with different algorithms and techniques
+
 ## Required Software
 
 - [Rust](https://www.rust-lang.org/tools/install)
